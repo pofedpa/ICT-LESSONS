@@ -1,0 +1,83 @@
+CREATE TABLE students(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    age INTEGER
+);
+
+INSERT INTO students(name, age)
+VALUES
+('A', 15),
+('B', 14),
+('C', 17),
+('D', 16),
+('E', 15);
+
+SELECT name, age FROM students
+ORDER BY age DESC
+LIMIT 0,2;
+
+UPDATE students
+SET age = 15
+WHERE id = 2;
+
+SELECT name FROM students
+WHERE age = 15;
+
+SELECT COUNT(name) FROM students
+WHERE age = 15;
+
+SELECT * FROM students;
+
+
+CREATE TABLE book(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    author TEXT,
+    price REAL
+);
+
+INSERT INTO book(title, author, price)
+VALUES
+('М’,’М, 450.00),
+('А’,’Ч', 330.50),
+('А’,’Ч', 299.00),
+('С’, ’ Е', 650.00),
+('А’,’П', 340.00);
+
+UPDATE book
+SET price = price - 20;
+
+SELECT title FROM book
+ORDER BY price ASC
+LIMIT 0,2;
+
+SELECT AVG(price) FROM book;
+
+SELECT * FROM book;
+
+CREATE TABLE expenses(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    amount REAL
+);
+
+INSERT INTO expenses(name, amount)
+VALUES
+('F', 60),
+('Q', 350),
+('K', 500),
+('Ko', 130);
+
+UPDATE expenses
+SET amount = 400
+WHERE name = 'K';
+
+DELETE FROM expenses
+WHERE name = 'Ko';
+
+SELECT amount FROM expenses
+ORDER BY amount DESC;
+
+SELECT COUNT(*) SUM(amount) FROM expenses 
+
+SELECT * FROM expenses;
