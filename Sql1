@@ -105,7 +105,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("/home/student/untitled1/school.sqlite3");
+    db.setDatabaseName("D:/projectsall/school.sqlite3");
 
     if (!db.open()) {
         qWarning() << "Ошибка открытия БД:" << db.lastError().text();
@@ -114,6 +114,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     model = new QSqlQueryModel(this);
     ui->table->setModel(model);
+    QObject::connect(ui->comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),this, &MainWindow::refreshTable);
     loadComboBox();
     refreshTable();
 }
@@ -127,7 +128,7 @@ MainWindow::~MainWindow()
 void MainWindow::loadComboBox()
 {
     ui->comboBox->clear();
-
+    ui->comboBox->addItem("", -1);
     QSqlQuery query("SELECT id,name FROM classes");
 
     if (query.lastError().isValid()) {
@@ -142,21 +143,23 @@ void MainWindow::loadComboBox()
     }
 }
 
-void MainWindow::onClassChanged(){
-    
-}
-
 void MainWindow::refreshTable()
 {
-    model->setQuery("SELECT name, grade_level, direction_id, homeroom_teacher_id FROM classes");
-
+    int idcombox = ui->comboBox->currentData().toInt();
+    QString a;
+    if(idcombox == -1){
+        model->setQuery("SELECT name, grade_level, direction_id, homeroom_teacher_id FROM classes");
+    }
+    else {
+        model->setQuery(QString("SELECT name, grade_level, direction_id, homeroom_teacher_id FROM classes WHERE id = %1").arg(idcombox));
+    }
     if (model->lastError().isValid()) {
         qWarning() << "Ошибка запроса:" << model->lastError().text();
         return;
     }
 
     model->setHeaderData(0, Qt::Horizontal, "Название класса");
-    model->setHeaderData(1, Qt::Horizontal, "Параллель (класс)");
+    model->setHeaderData(1, Qt::Horizontal, "класc");
     model->setHeaderData(2, Qt::Horizontal, "ID направления");
     model->setHeaderData(3, Qt::Horizontal, "ID классного руководителя");
 }
