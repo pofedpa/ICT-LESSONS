@@ -164,3 +164,103 @@ void MainWindow::refreshTable()
     model->setHeaderData(3, Qt::Horizontal, "ID классного руководителя");
 }
 
+
+
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QDebug>
+#include <QSqlQueryModel>
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("D:/projectsall/school.sqlite3");
+
+    if (!db.open()) {
+        qWarning() << "Ошибка открытия БД:" << db.lastError().text();
+        return;
+    }
+
+    model = new QSqlQueryModel(this);
+    ui->table->setModel(model);
+    QObject::connect(ui->comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),this, &MainWindow::refreshTable);
+    loadComboBox();
+    refreshTable();
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+
+void MainWindow::loadComboBox()
+{
+    ui->comboBox->clear();
+    ui->comboBox->addItem("", -1);
+    QSqlQuery query("SELECT id,name FROM classes");
+
+    if (query.lastError().isValid()) {
+        qWarning() << "Ошибка ComboBox:" << query.lastError().text();
+        return;
+    }
+
+    while (query.next()) {
+        int id = query.value(0).toInt();
+        QString name = query.value(1).toString();
+        ui->comboBox->addItem(name, id);
+    }
+}
+
+void MainWindow::refreshTable()
+{
+    QSqlQuery query;
+    int idcombox = ui->comboBox->currentData().toInt();
+    QString baseSql = "SELECT "
+                      "c.name AS class_name, "
+                      "p.last_name || ' ' || p.first_name || ' ' || COALESCE(p.patronymic, '') AS student_name, "
+                      "cl.name AS club_name "
+                      "FROM students s "
+                      "JOIN classes c ON s.class_id = c.id "
+                      "JOIN people p ON s.person_id = p.id "
+                      "LEFT JOIN club_enrollments ce ON s.id = ce.student_id "
+                      "LEFT JOIN clubs cl ON ce.club_id = cl.id ";
+    if(idcombox == -1){
+        query.prepare(baseSql);
+    }
+    else {
+        query.prepare(baseSql + "WHERE s.class_id = :classId");
+        query.bindValue(":classId", idcombox);
+    }
+    if (model->lastError().isValid()) {
+        qWarning() << "Ошибка запроса:" << model->lastError().text();
+        return;
+    }
+    model->setQuery(query);
+
+    model->setHeaderData(0, Qt::Horizontal, "Класс");
+    model->setHeaderData(1, Qt::Horizontal, "Ученик");
+    model->setHeaderData(2, Qt::Horizontal, "Кружок");
+}
+
+void MainWindow::loadClubs()
+{
+    ui->comboBoxClubs->clear();
+    ui->comboBoxClubs->addItem("--- Все кружки ---", -1);
+
+    QSqlQuery query("SELECT id, name FROM clubs ORDER BY name");
+
+    while (query.next()) {
+        int id = query.value(0).toInt();
+        QString name = query.value(1).toString();
+        ui->comboBoxClubs->addItem(name, id);
+    }
+}
