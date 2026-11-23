@@ -264,3 +264,33 @@ void MainWindow::loadClubs()
         ui->comboBoxClubs->addItem(name, id);
     }
 }
+
+
+
+#include <QTcpServer>
+#include<QHostAddress>
+#include<QByteArray>
+#include <list>
+#include <QTcpSocket>
+int main()
+{
+    QTcpServer server;
+    QStringList co =  {"1","2","3","4"};
+    QObject::connect(&server,&QTcpServer::newConnection,&server,[&server,&co](){
+        QTcpSocket *client = server.nextPendingConnection();
+        QObject::connect(client,&QTcpSocket::readyRead,client,[client,&co](){
+            QByteArray a = client->readAll();
+            bool ab;
+            int number = a.trimmed().toInt(&ab);
+            if (ab && number >= 0 && number < co.size()) {
+                client->write(co[number].toUtf8());
+            }
+            else qDebug()<<"извини но нет";
+        });
+    });
+    server.listen(QHostAddress::AnyIPv4,8);
+    if(!server.listen(QHostAddress::AnyIPv4,8)){
+        qDebug()<<server.errorString();
+    }
+}
+
