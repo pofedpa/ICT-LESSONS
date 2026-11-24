@@ -267,13 +267,16 @@ void MainWindow::loadClubs()
 
 
 
+#include <QCoreApplication>
 #include <QTcpServer>
 #include<QHostAddress>
 #include<QByteArray>
 #include <list>
 #include <QTcpSocket>
-int main()
+#include <QDebug>
+int main(int argc, char *argv[])
 {
+    QCoreApplication a(argc, argv);
     QTcpServer server;
     QStringList co =  {"1","2","3","4"};
     QObject::connect(&server,&QTcpServer::newConnection,&server,[&server,&co](){
@@ -282,15 +285,15 @@ int main()
             QByteArray a = client->readAll();
             bool ab;
             int number = a.trimmed().toInt(&ab);
-            if (ab && number >= 0 && number < co.size()) {
-                client->write(co[number].toUtf8());
+            if (ab && number-1 >= 0 && number-1 < co.size()) {
+                client->write(co[number-1].toUtf8());
             }
             else qDebug()<<"извини но нет";
         });
     });
-    server.listen(QHostAddress::AnyIPv4,8);
-    if(!server.listen(QHostAddress::AnyIPv4,8)){
+    if(!server.listen(QHostAddress::AnyIPv4,8888)){
         qDebug()<<server.errorString();
     }
+    return a.exec();
 }
 
